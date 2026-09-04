@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PulseFit | Daily Tracker</title>
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg: #0d0f12;
+            --card-bg: #161920;
+            --card-border: #232733;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --accent-cyan: #00f2fe;
+            --accent-blue: #4facfe;
+            --accent-green: #10b981;
+            --accent-orange: #ff5e36;
+            --accent-purple: #8b5cf6;
+            --radius-lg: 20px;
+            --radius-md: 12px;
+            --radius-sm: 8px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        /* Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(135deg, rgba(22, 25, 32, 0.8), rgba(22, 25, 32, 0.4));
+            border: 1px solid var(--card-border);
+            padding: 1.5rem 2rem;
+            border-radius: var(--radius-lg);
+            backdrop-filter: blur(10px);
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.2rem;
+            color: #000;
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.3);
+        }
+
+        .user-info h1 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .user-info p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .date-badge {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            color: var(--accent-cyan);
+            font-weight: 600;
+        }
+
+        /* Dashboard Grid */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card-title svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .badge {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.25rem 0.6rem;
+            border-radius: 10px;
+            text-transform: uppercase;
+        }
+
+        .badge-steps { background: rgba(79, 172, 254, 0.15); color: var(--accent-blue); }
+        .badge-gym { background: rgba(255, 94, 54, 0.15); color: var(--accent-orange); }
+
+        /* Step Counter Card UI */
+        .steps-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            margin: 1rem 0;
+            position: relative;
+        }
+
+        .progress-ring-container {
+            position: relative;
+            width: 160px;
+            height: 160px;
+        }
+
+        .progress-ring {
+            transform: rotate(-90deg);
+        }
+
+        .progress-ring-bg {
+            stroke: rgba(255, 255, 255, 0.05);
+        }
+
+        .progress-ring-circle {
+            stroke: url(#cyan-gradient);
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.5s ease-in-out;
+        }
+
+        .ring-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .ring-text .count {
+            font-size: 1.8rem;
+            font-weight: 800;
+            display: block;
+            line-height: 1;
+        }
+
+        .ring-text .label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        input[type="number"] {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-sm);
+            color: #fff;
+            padding: 0.75rem 1rem;
+            flex: 1;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input[type="number"]:focus {
+            border-color: var(--accent-blue);
+        }
+
+        button {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+            border: none;
+            color: #000;
+            font-weight: 700;
+            padding: 0.75rem 1.25rem;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: transform 0.1s, opacity 0.2s;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        button:active {
+            transform: scale(0.97);
+        }
+
+        /* Gym Tracker UI */
+        .gym-target-info {
+            text-align: center;
+            margin: 0.5rem 0 1.5rem;
+        }
+
+        .gym-target-info h2 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: #fff;
+        }
+
+        .gym-target-info span {
+            color: var(--accent-orange);
+        }
+
+        .gym-days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .day-btn {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-md);
+            padding: 0.75rem 0.25rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .day-btn .day-name {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .day-btn .day-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid var(--card-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            transition: all 0.2s ease;
+        }
+
+        .day-btn.completed {
+            background: rgba(255, 94, 54, 0.1);
+            border-color: rgba(255, 94, 54, 0.4);
+        }
+
+        .day-btn.completed .day-icon {
+            background: var(--accent-orange);
+            border-color: var(--accent-orange);
+            color: #fff;
+        }
+
+        .day-btn.completed .day-name {
+            color: #fff;
+        }
+
+        .gym-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-sm);
+        }
+
+        .gym-actions span {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .reset-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            cursor: pointer;
+            padding: 0;
+            text-decoration: underline;
+        }
+
+        .reset-btn:hover {
+            color: #fff;
+        }
+
+        /* Stats Banner */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .stat-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-md);
+            padding: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .stat-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stat-icon.fire { background: rgba(255, 94, 54, 0.15); color: var(--accent-orange); }
+        .stat-icon.trophy { background: rgba(16, 185, 129, 0.15); color: var(--accent-green); }
+        .stat-icon.bolt { background: rgba(139, 92, 246, 0.15); color: var(--accent-purple); }
+
+        .stat-data h3 {
+            font-size: 1.25rem;
+            font-weight: 800;
+        }
+
+        .stat-data p {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* Motivational Quote Card */
+        .quote-card {
+            background: linear-gradient(135deg, rgba(79, 172, 254, 0.1), rgba(0, 242, 254, 0.05));
+            border: 1px solid rgba(79, 172, 254, 0.2);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .quote-card p {
+            font-style: italic;
+            font-size: 1rem;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+        }
+
+        .quote-card span {
+            font-size: 0.8rem;
+            color: var(--accent-cyan);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* History Log */
+        .history-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+        }
+
+        .history-list {
+            list-style: none;
+            margin-top: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+        }
+
+        .history-date {
+            color: var(--text-muted);
+        }
+
+        .history-details {
+            display: flex;
+            gap: 1rem;
+            font-weight: 600;
+        }
+
+        .history-steps { color: var(--accent-cyan); }
+        .history-gym { color: var(--accent-orange); }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--card-border);
+            border-radius: 3px;
+        }
+
+        @media (max-width: 600px) {
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+            .date-badge {
+                align-self: flex-start;
+            }
+            .steps-wrapper {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <div class="user-profile">
+                <div class="avatar">FIT</div>
+                <div class="user-info">
+                    <h1>My Goals Dashboard</h1>
+                    <p>Consistency over perfection</p>
+                </div>
+            </div>
+            <div class="date-badge" id="current-date">Today, Oct 24</div>
+        </header>
+
+        <!-- Stats Highlights -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon fire">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2c0 0-8 4-8 12 0 4.418 3.582 8 8 8s8-3.582 8-8c0-8-8-12-8-12zm0 16c-2.209 0-4-1.791-4-4 0-2 2-3 4-6 2 3 4 4 4 6 0 2.209-1.791 4-4 4z"></path></svg>
+                </div>
+                <div class="stat-data">
+                    <h3 id="streak-count">0 Days</h3>
+                    <p>Current Streak</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon trophy">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 15c3.866 0 7-3.134 7-7V3H5v5c0 3.866 3.134 7 7 7z"></path><path d="M5 5H3v3a4 4 0 004 4h0"></path><path d="M19 5h2v3a4 4 0 01-4 4h0"></path><path d="M12 15v5"></path><path d="M8 21h8"></path></svg>
+                </div>
+                <div class="stat-data">
+                    <h3 id="weekly-score">0 / 2</h3>
+                    <p>Targets Hit This Week</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon bolt">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
+                </div>
+                <div class="stat-data">
+                    <h3 id="total-steps-wk">0</h3>
+                    <p>Weekly Total Steps</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Tracking Cards Grid -->
+        <div class="grid">
+            
+            <!-- Daily Steps Card -->
+            <div class="card">
+                <div>
+                    <div class="card-header">
+                        <div class="card-title">
+                            <svg fill="none" stroke="var(--accent-blue)" stroke-width="2" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                            Daily Steps
+                        </div>
+                        <span class="badge badge-steps">Goal: 10,000</span>
+                    </div>
+
+                    <div class="steps-wrapper">
+                        <div class="progress-ring-container">
+                            <svg class="progress-ring" width="160" height="160">
+                                <defs>
+                                    <linearGradient id="cyan-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stop-color="#00f2fe" />
+                                        <stop offset="100%" stop-color="#4facfe" />
+                                    </linearGradient>
+                                </defs>
+                                <circle class="progress-ring-bg" stroke-width="12" fill="transparent" r="66" cx="80" cy="80"/>
+                                <circle class="progress-ring-circle" id="step-ring" stroke-width="12" fill="transparent" r="66" cx="80" cy="80" stroke-dasharray="414.69" stroke-dashoffset="414.69"/>
+                            </svg>
+                            <div class="ring-text">
+                                <span class="count" id="step-display">0</span>
+                                <span class="label">/ 10,000 steps</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <input type="number" id="step-input" placeholder="Enter steps (e.g. 2500)" min="0" step="100">
+                    <button id="add-steps-btn">Add Steps</button>
+                </div>
+            </div>
+
+            <!-- Weekly Gym Card -->
+            <div class="card">
+                <div>
+                    <div class="card-header">
+                        <div class="card-title">
+                            <svg fill="none" stroke="var(--accent-orange)" stroke-width="2" viewBox="0 0 24 24"><path d="M6 4v16M18 4v16M3 8h3m12 0h3M3 16h3m12 0h3M8 12h8"></path></svg>
+                            Gym Sessions
+                        </div>
+                        <span class="badge badge-gym">Goal: 5 / Week</span>
+                    </div>
+
+                    <div class="gym-target-info">
+                        <h2><span id="gym-count">0</span> of 5 Done</h2>
+                        <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 4px;">Click a day to log your workout</p>
+                    </div>
+
+                    <div class="gym-days" id="gym-days-container">
+                        <!-- Days generated via JS -->
+                    </div>
+                </div>
+
+                <div class="gym-actions">
+                    <span id="gym-status">2 sessions remaining</span>
+                    <button class="reset-btn" id="reset-gym-btn">Reset Week</button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Motivational Quote -->
+        <div class="quote-card">
+            <p id="quote-text">"The only bad workout is the one that didn't happen."</p>
+            <span>Daily Inspiration</span>
+        </div>
+
+        <!-- History Log Card -->
+        <div class="history-card">
+            <div class="card-header" style="margin-bottom: 0;">
+                <div class="card-title">
+                    <svg fill="none" stroke="var(--accent-purple)" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Recent Activity History
+                </div>
+                <button class="reset-btn" id="clear-history-btn">Clear Logs</button>
+            </div>
+            <ul class="history-list" id="history-list">
+                <!-- Dynamic Logs -->
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Data State Management
+        const STEP_GOAL = 10000;
+        const GYM_GOAL = 5;
+        const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+        const defaultState = {
+            currentSteps: 0,
+            gymDays: [false, false, false, false, false, false, false], // Mon-Sun
+            lastUpdated: new Date().toDateString(),
+            streak: 0,
+            history: []
+        };
+
+        let state = JSON.parse(localStorage.getItem('pulseFitData')) || defaultState;
+
+        // Domestic Quotes List
+        const quotes = [
+            "\"The only bad workout is the one that didn't happen.\"",
+            "\"Small daily improvements over time lead to stunning results.\"",
+            "\"Action drives motivation, not the other way around.\"",
+            "\"You don't have to be extreme, just consistent.\"",
+            "\"Step by step. Day by day.\""
+        ];
+
+        // DOM Elements
+        const stepDisplay = document.getElementById('step-display');
+        const stepInput = document.getElementById('step-input');
+        const addStepsBtn = document.getElementById('add-steps-btn');
+        const stepRing = document.getElementById('step-ring');
+        const gymCountEl = document.getElementById('gym-count');
+        const gymDaysContainer = document.getElementById('gym-days-container');
+        const gymStatusEl = document.getElementById('gym-status');
+        const resetGymBtn = document.getElementById('reset-gym-btn');
+        const streakCountEl = document.getElementById('streak-count');
+        const weeklyScoreEl = document.getElementById('weekly-score');
+        const totalStepsWkEl = document.getElementById('total-steps-wk');
+        const currentDateEl = document.getElementById('current-date');
+        const quoteTextEl = document.getElementById('quote-text');
+        const historyListEl = document.getElementById('history-list');
+        const clearHistoryBtn = document.getElementById('clear-history-btn');
+
+        // Init
+        function init() {
+            // Set Date Badge
+            const options = { weekday: 'short', month: 'short', day: 'numeric' };
+            currentDateEl.textContent = new Date().toLocaleDateString('en-US', options);
+
+            // Set Random Quote
+            quoteTextEl.textContent = quotes[Math.floor(Math.random() * quotes.length)];
+
+            // Setup Circle SVG calculation
+            const radius = stepRing.r.baseVal.value;
+            const circumference = 2 * Math.PI * radius;
+            stepRing.style.strokeDasharray = `${circumference} ${circumference}`;
+
+            render();
+        }
+
+        // Save State
+        function save() {
+            localStorage.setItem('pulseFitData', JSON.stringify(state));
+            render();
+        }
+
+        // Render UI Elements based on state
+        function render() {
+            // 1. Render Steps
+            const steps = state.currentSteps;
+            stepDisplay.textContent = steps.toLocaleString();
+            
+            // Progress Ring
+            const radius = stepRing.r.baseVal.value;
+            const circumference = 2 * Math.PI * radius;
+            const percent = Math.min(steps / STEP_GOAL, 1);
+            const offset = circumference - (percent * circumference);
+            stepRing.style.strokeDashoffset = offset;
+
+            // 2. Render Gym Tracker
+            gymDaysContainer.innerHTML = '';
+            let gymTotal = 0;
+
+            DAYS.forEach((day, index) => {
+                const isDone = state.gymDays[index];
+                if(isDone) gymTotal++;
+
+                const dayBtn = document.createElement('div');
+                dayBtn.className = `day-btn ${isDone ? 'completed' : ''}`;
+                dayBtn.innerHTML = `
+                    <span class="day-name">${day}</span>
+                    <div class="day-icon">${isDone ? '✓' : ''}</div>
+                `;
+                dayBtn.addEventListener('click', () => toggleGymDay(index));
+                gymDaysContainer.appendChild(dayBtn);
+            });
+
+            gymCountEl.textContent = gymTotal;
+            const remainingGym = GYM_GOAL - gymTotal;
+            gymStatusEl.textContent = remainingGym > 0 
+                ? `${remainingGym} more needed this week` 
+                : 'Weekly Goal Completed! 🔥';
+
+            // 3. Render High Level Stats
+            // Streaks
+            let activeStreak = 0;
+            if (state.currentSteps >= STEP_GOAL) activeStreak++;
+            if (gymTotal >= GYM_GOAL) activeStreak++;
+            streakCountEl.textContent = `${state.streak + (activeStreak > 0 ? 1 : 0)} Days`;
+
+            // Targets Hit This Week
+            let targetsHit = 0;
+            if (steps >= STEP_GOAL) targetsHit++;
+            if (gymTotal >= GYM_GOAL) targetsHit++;
+            weeklyScoreEl.textContent = `${targetsHit} / 2`;
+
+            // Weekly Estimated Steps
+            totalStepsWkEl.textContent = steps.toLocaleString();
+
+            // 4. Render History
+            renderHistory();
+        }
+
+        // Toggle Gym Session Day
+        function toggleGymDay(index) {
+            state.gymDays[index] = !state.gymDays[index];
+            logHistoryEvent(`Gym day ${DAYS[index]} ${state.gymDays[index] ? 'Completed' : 'Unchecked'}`);
+            save();
+        }
+
+        // Add Steps Logic
+        addStepsBtn.addEventListener('click', () => {
+            const value = parseInt(stepInput.value);
+            if (!isNaN(value) && value > 0) {
+                state.currentSteps += value;
+                logHistoryEvent(`Added ${value.toLocaleString()} steps`);
+                stepInput.value = '';
+                
+                // Update Streak if hit target
+                if (state.currentSteps >= STEP_GOAL && (state.currentSteps - value) < STEP_GOAL) {
+                    logHistoryEvent('🎯 Daily 10k Steps Goal Achieved!');
+                }
+
+                save();
+            }
+        });
+
+        // Allow 'Enter' key on input
+        stepInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addStepsBtn.click();
+        });
+
+        // Reset Gym Week
+        resetGymBtn.addEventListener('click', () => {
+            if (confirm("Reset current week's gym logs?")) {
+                state.gymDays = [false, false, false, false, false, false, false];
+                logHistoryEvent('Reset weekly gym tracker');
+                save();
+            }
+        });
+
+        // Logging System
+        function logHistoryEvent(action) {
+            const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            state.history.unshift({
+                time: timestamp,
+                action: action,
+                steps: state.currentSteps
+            });
+
+            // Keep only latest 10 items
+            if (state.history.length > 10) state.history.pop();
+        }
+
+        function renderHistory() {
+            historyListEl.innerHTML = '';
+            if (state.history.length === 0) {
+                historyListEl.innerHTML = '<li class="history-item" style="color: var(--text-muted); justify-content: center;">No recent activity logged</li>';
+                return;
+            }
+
+            state.history.forEach(item => {
+                const li = document.createElement('li');
+                li.className = 'history-item';
+                li.innerHTML = `
+                    <span class="history-date">${item.time}</span>
+                    <span>${item.action}</span>
+                `;
+                historyListEl.appendChild(li);
+            });
+        }
+
+        clearHistoryBtn.addEventListener('click', () => {
+            state.history = [];
+            save();
+        });
+
+        // Initialize on Load
+        init();
+    </script>
+</body>
+</html>
